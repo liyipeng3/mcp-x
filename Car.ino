@@ -10,8 +10,8 @@
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
 // WiFi配置
-const char* ssid = "WIFI-S";
-const char* password = "lyp15770008102";
+const char* ssid = "xxx";
+const char* password = "xxx";
 
 #define TFT_FONT_HEIGHT 32  // 基础字体高度
 #define TFT_LINE_SPACING 4  // 行间距
