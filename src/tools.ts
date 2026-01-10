@@ -1,9 +1,13 @@
 import z from "zod";
-import { CarController } from "./car-controller";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { CarController, CarDirection } from "./car-controller";
+import { CameraClient } from "./camera-client";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { loadConfig } from "./config";
 
 
-const carController = new CarController();
+const config = loadConfig();
+const carController = new CarController(config.carBaseUrl ?? process.env.CAR_BASE_URL ?? "http://192.168.1.106");
+const cameraClient = new CameraClient(config.cameraSnapshotUrl ?? process.env.CAMERA_SNAPSHOT_URL);
 
 export const registerTools = (server: McpServer) => {
 
@@ -17,7 +21,7 @@ export const registerTools = (server: McpServer) => {
             speed: z.number().min(100).max(255).optional().describe("Speed of movement (100-255)"),
             duration: z.number().min(0).optional().describe("Duration of movement in seconds")
         }
-    }, async ({ direction, speed, duration }: { direction?: 'forward' | 'backward' | 'left' | 'right' | 'stop', speed?: number, duration?: number }) => ({
+    }, async ({ direction, speed, duration }: { direction: CarDirection; speed?: number; duration?: number }) => ({
         content: [{
             type: "text",
             text: `Car movement command executed. Direction: ${direction}, Speed: ${speed || 'default'}, Duration: ${duration || 'continuous'}. Result: ${(await carController.moveCar({ cmd: direction, speed, duration })).message}`
@@ -45,7 +49,7 @@ export const registerTools = (server: McpServer) => {
                 duration: z.number().min(0).optional().describe("Duration of movement in seconds")
             })).describe("Route to pilot the car")
         }
-    }, async ({ route }: { route: { direction: 'forward' | 'backward' | 'left' | 'right' | 'stop', speed?: number, duration?: number }[] }) => ({
+    }, async ({ route }: { route: { direction: CarDirection; speed?: number; duration?: number }[] }) => ({
         content: [{
             type: "text",
             text: `Car pilot command executed. Route: ${route.map(r => `${r.direction}, Speed: ${r.speed || 'default'}, Duration: ${r.duration || 'continuous'}`).join(', ')}. Result: ${(await carController.pilotCar({route})).message}`
@@ -63,6 +67,29 @@ export const registerTools = (server: McpServer) => {
             text: `Car stop command executed. Duration: ${duration || 'continuous'}. Result: ${(await carController.stopCar()).message}`
         }]
     }));
+
+    server.registerTool("get_camera_snapshot", {
+        description: "Fetch current camera snapshot from phone/ip-camera url and return image",
+        inputSchema: {
+            url: z.string().url().optional().describe("Snapshot url, overrides CAMERA_SNAPSHOT_URL"),
+            timeoutMs: z.number().min(1000).max(30000).optional().describe("Request timeout in ms"),
+        }
+    }, async ({ url, timeoutMs }: { url?: string; timeoutMs?: number }) => {
+        const snapshot = await cameraClient.fetchSnapshot({ url, timeoutMs });
+        return {
+            content: [
+                {
+                    type: "image",
+                    mimeType: snapshot.mimeType,
+                    data: snapshot.base64Data,
+                },
+                {
+                    type: "text",
+                    text: `camera_snapshot mimeType=${snapshot.mimeType} bytes=${snapshot.byteLength} url=${url ?? cameraClient.getSnapshotUrl() ?? "(unset)"}`
+                }
+            ]
+        };
+    });
 
 
 }

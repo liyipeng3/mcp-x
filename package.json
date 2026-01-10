@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "type": "commonjs",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "build": "mkdir -p dist && cp mcp-x.config.json dist/ && tsc",
+    "dev": "mkdir -p dist && cp mcp-x.config.json dist/ && tsx watch src/index.ts",
+    "start": "mkdir -p dist && cp mcp-x.config.json dist/ && node dist/index.js"
   },
   "keywords": [],
   "author": "",

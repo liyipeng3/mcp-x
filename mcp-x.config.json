@@ -1,0 +1,5 @@
+{
+  "carBaseUrl": "http://192.168.1.115",
+  "cameraSnapshotUrl": "http://192.168.1.108:8081/video"
+}
+

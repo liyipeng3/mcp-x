@@ -7,6 +7,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { registerTools } from "./tools.js";
 
+const [major] = process.versions.node.split(".").map(Number);
+if (!major || major < 18) {
+  console.error(`Node.js ${process.versions.node} is too old. Please run this MCP server with Node.js >= 18.`);
+  process.exit(1);
+}
+
 // 创建MCP服务器
 const server = new McpServer({
   name: "car-controller-mcp",
