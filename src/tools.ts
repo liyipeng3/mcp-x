@@ -85,7 +85,7 @@ export const registerTools = (server: McpServer) => {
                 },
                 {
                     type: "text",
-                    text: `camera_snapshot mimeType=${snapshot.mimeType} bytes=${snapshot.byteLength} url=${url ?? cameraClient.getSnapshotUrl() ?? "(unset)"}`
+                    text: `camera_snapshot mimeType=${snapshot.mimeType} bytes=${snapshot.byteLength} source=${snapshot.source ?? "unknown"} totalMs=${snapshot.totalMs ?? -1} url=${url ?? cameraClient.getSnapshotUrl() ?? "(unset)"}`
                 }
             ]
         };
